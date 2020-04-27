@@ -1,6 +1,6 @@
 <?php
 /*
- * 2019 - 2020 Nicolas Jacquemin
+ * 2019-2020 Nicolas Jacquemin
  */
 
 if (!defined('_PS_VERSION_'))
