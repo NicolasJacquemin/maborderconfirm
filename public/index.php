@@ -1,6 +1,6 @@
 <?php
 /*
- * 2019 - 2020 Nicolas Jacquemin
+ * 2019-2020 Nicolas Jacquemin
  */
 
 header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
