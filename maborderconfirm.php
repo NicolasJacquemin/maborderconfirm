@@ -24,10 +24,10 @@ class MabOrderConfirm extends Module {
   }
 
   public function install() {
-    Configuration::updateValue('MAB_ORDER_CONFIRM_SHIPPED', 4);
-    Configuration::updateValue('MAB_ORDER_CONFIRM_RECEIVED', 5);
+//    Configuration::updateValue('MAB_ORDER_CONFIRM_SHIPPED', 4);
+//    Configuration::updateValue('MAB_ORDER_CONFIRM_RECEIVED', 5);
 
-    if (!parent::install() || !$this->registerHook('displayHeader') || !$this->registerHook('hookOrderHistory') || $this->installOrderOverrides()) {
+    if (!parent::install() || !$this->registerHook('displayHeader') || !$this->registerHook('orderHistory') || $this->installOrderOverrides()) {
       return false;
     }
 
@@ -43,29 +43,30 @@ class MabOrderConfirm extends Module {
     $output = '';
     $errors = array();
     
+    //-- TODO infobulle to add the hook in the view | {hook h='orderHistory'}
+    
     return $output . $this->renderForm();
   }
   
   //-- TODO admin form
   public function renderForm() {
-    return '';
+    return '<div style="margin: 32px; background-color: #abdcb3; padding: 16px;">WIP - Coming soon, set up the key statuses.</div>';
   }
 
   public function hookDisplayHeader($params) {
     if (floatval(_PS_VERSION_) >= 1.6 && floatval(_PS_VERSION_) < 1.7) {
-      $this->context->controller->addJS('modules/' . $this->name . '/views/js/maborderconfirm.js');
-      $this->context->controller->addCSS('modules/' . $this->name . '/views/css/maborderconfirm.css');
+      $this->context->controller->addJS(($this->_path) . '/views/js/maborderconfirm.js');
+      $this->context->controller->addCSS(($this->_path) . 'views/css/maborderconfirm.css');
     }
-    $this->context->controller->addJqueryPlugin('bxslider');
   }
 
   public function hookOrderHistory($params) {
     //-- TODO assign customised status ID
-    $this->smarty->assign(array(
-        
-    ));
-
-    return $this->display(__FILE__, 'root-category.tpl');
+//    $this->smarty->assign(array(
+//        
+//    ));
+    
+    return $this->display(__FILE__, 'views/templates/maborderconfirm.tpl');
   }
   
   /***********************************************************************/
