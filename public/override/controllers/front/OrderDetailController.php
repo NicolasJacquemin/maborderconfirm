@@ -9,10 +9,15 @@ class OrderDetailController extends OrderDetailControllerCore {
     parent::postProcess();
 
     if (Tools::isSubmit('markAsReceived')) {
-      $idOrder = (int) (Tools::getValue('id_order'));
+      $this->markAsReceived();
+    }
+  }
+  
+  public function markAsReceived() {
+      $idOrder = (int) (Tools::getValue('orderId'));
       $order = new Order($idOrder);
 
-      if (Validate::isLoadedObject($order)) {
+      if (Validate::isLoadedObject($order) && $order->id_customer == $this->context->customer->id) {
         //-- TODO make this id customisable
         if ($order->getCurrentState() == 4) { // if the order is shipped
           $new_history = new OrderHistory();
@@ -22,11 +27,9 @@ class OrderDetailController extends OrderDetailControllerCore {
           $new_history->addWithemail(true);
         }
 
-
-        $this->context->smarty->assign('receipt_confirmation', true);
-      } else
+        $this->context->smarty->assign('order', $order);
+      } else {
         $this->_errors[] = Tools::displayError('Error: Invalid order number');
-    }
+      }
   }
-
 }
