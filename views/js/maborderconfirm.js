@@ -10,7 +10,7 @@ function maborderconfirm(form) {
     }
   });
   
-  var orderId = $(form).find("input[name=orderId]")[0].value;
+  var orderId = $(form).find("input[name=id_order]")[0].value;
   var file = action + '&id_order=' + orderId;
 
   $.ajax({

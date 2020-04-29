@@ -24,8 +24,8 @@ class MabOrderConfirm extends Module {
   }
 
   public function install() {
-//    Configuration::updateValue('MAB_ORDER_CONFIRM_SHIPPED', 4);
-//    Configuration::updateValue('MAB_ORDER_CONFIRM_RECEIVED', 5);
+    Configuration::updateValue('MAB_ORDER_CONFIRM_SHIPPED', 4);
+    Configuration::updateValue('MAB_ORDER_CONFIRM_RECEIVED', 5);
 
     if (!parent::install() || !$this->registerHook('displayHeader') || !$this->registerHook('orderHistory') || $this->installOrderOverrides()) {
       return false;
@@ -39,18 +39,98 @@ class MabOrderConfirm extends Module {
   }
   
   //-- TODO admin form to customise status ID (order is shipped, order is received)
+  //-- TODO infobulle to add the hook in the view | {hook h='orderHistory'}
   public function getContent() {
     $output = '';
     $errors = array();
     
-    //-- TODO infobulle to add the hook in the view | {hook h='orderHistory'}
+    if (Tools::isSubmit('maborderconfirm')) {
+      $rec = Tools::getValue('MAB_ORDER_CONFIRM_RECEIVED');
+      if (!Validate::isInt($rec) || $rec <= 0) {
+        $errors[] = $this->l('The received status ID is invalid. Please choose an existing ID.');
+      }
+
+      $shp = Tools::getValue('MAB_ORDER_CONFIRM_SHIPPED');
+      if (!Validate::isInt($shp) || $shp <= 0) {
+        $errors[] = $this->l('The shipped status ID is invalid. Please choose an existing ID.');
+      }
+
+      if (isset($errors) && count($errors) > 0) {
+        $output = $this->displayError(implode('<br />', $errors));
+      } else {
+        Configuration::updateValue('MAB_ORDER_CONFIRM_SHIPPED', (int) $shp);
+        Configuration::updateValue('MAB_ORDER_CONFIRM_RECEIVED', (int) $rec);
+
+        $output = $this->displayConfirmation($this->l('Your settings have been updated.'));
+      }
+    }
     
     return $output . $this->renderForm();
   }
   
   //-- TODO admin form
+  //-- TODO load the list of statuses
   public function renderForm() {
-    return '<div style="margin: 32px; background-color: #abdcb3; padding: 16px;">WIP - Coming soon, set up the key statuses.</div>';
+    $fields_form = array(
+        'form' => array(
+            'legend' => array(
+                'title' => $this->l('Settings'),
+                'icon' => 'icon-cogs'
+            ),
+            'description' => $this->l('Check status IDs in Order > Status.'),
+//            'description' => $this->l('Don\'t forget to add {hook h=\'orderHistory\'} in your template.'),
+            'input' => array(
+                array(
+                    'type' => 'text',
+                    'label' => $this->l('Shipped status ID'),
+                    'name' => 'MAB_ORDER_CONFIRM_SHIPPED',
+                    'class' => 'fixed-width-xs',
+                    'desc' => $this->l('Set the ID of the shipped status (default: 4).'),
+                ),
+                array(
+                    'type' => 'text',
+                    'label' => $this->l('Received status ID'),
+                    'name' => 'MAB_ORDER_CONFIRM_RECEIVED',
+                    'class' => 'fixed-width-xs',
+                    'desc' => $this->l('Set the ID of the received status (default: 5).'),
+                ),
+            ),
+            'submit' => array(
+                'title' => $this->l('Save'),
+            )
+        ),
+    );
+
+    $helper = new HelperForm();
+    $helper->show_toolbar = false;
+    $helper->table = $this->table;
+    $lang = new Language((int) Configuration::get('PS_LANG_DEFAULT'));
+    $helper->default_form_language = $lang->id;
+    $helper->allow_employee_form_lang = Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG') ? Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG') : 0;
+    $this->fields_form = array();
+    $helper->id = (int) Tools::getValue('id_carrier');
+    $helper->identifier = $this->identifier;
+    $helper->submit_action = 'maborderconfirm';
+    $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false) . '&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name;
+    $helper->token = Tools::getAdminTokenLite('AdminModules');
+    $helper->tpl_vars = array(
+        'fields_value' => $this->getConfigFieldsValues(),
+        'languages' => $this->context->controller->getLanguages(),
+        'id_language' => $this->context->language->id
+    );
+    
+    $echo = '<div style="margin: 32px; background-color: #abdcb3; padding: 16px;">WIP - Coming soon, set up the key statuses.</div>';
+//    $echo .= $this->displayConfirmation($this->l('Your country has been updated.'));
+    $echo .= $helper->generateForm(array($fields_form));
+
+    return $echo;
+  }
+
+  public function getConfigFieldsValues() {
+    return array(
+        'MAB_ORDER_CONFIRM_SHIPPED' => Tools::getValue('MAB_ORDER_CONFIRM_SHIPPED', (int) Configuration::get('MAB_ORDER_CONFIRM_SHIPPED')),
+        'MAB_ORDER_CONFIRM_RECEIVED' => Tools::getValue('MAB_ORDER_CONFIRM_RECEIVED', (int) Configuration::get('MAB_ORDER_CONFIRM_RECEIVED')),
+    );
   }
 
   public function hookDisplayHeader($params) {
@@ -61,10 +141,12 @@ class MabOrderConfirm extends Module {
   }
 
   public function hookOrderHistory($params) {
-    //-- TODO assign customised status ID
-//    $this->smarty->assign(array(
-//        
-//    ));
+    $values = $this->getConfigFieldsValues();
+
+    $this->smarty->assign(array(
+        'id_status_shipped' => $values['MAB_ORDER_CONFIRM_SHIPPED'],
+        'id_status_received' => $values['MAB_ORDER_CONFIRM_RECEIVED']
+    ));
     
     return $this->display(__FILE__, 'views/templates/maborderconfirm.tpl');
   }
