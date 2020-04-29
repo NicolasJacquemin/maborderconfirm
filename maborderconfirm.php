@@ -119,7 +119,7 @@ class MabOrderConfirm extends Module {
         'id_language' => $this->context->language->id
     );
     
-    $echo = '<div style="margin: 32px; background-color: #abdcb3; padding: 16px;">WIP - Coming soon, set up the key statuses.</div>';
+    $echo = '<div style="margin: 32px; background-color: #abdcb3; padding: 16px;">WIP - Coming soon, the list of statuses.</div>';
 //    $echo .= $this->displayConfirmation($this->l('Your country has been updated.'));
     $echo .= $helper->generateForm(array($fields_form));
 
