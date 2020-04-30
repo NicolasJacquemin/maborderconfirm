@@ -3,7 +3,7 @@
 global $_MODULE;
 $_MODULE = array();
 
-$_MODULE['<{maborderconfirm}prestashop>maborderconfirm_64b60f6ee421828f22196ccce6f57cbc'] = 'Ho ricevuto questo ordine';
+$_MODULE['<{maborderconfirm}prestashop>maborderconfirm_64b60f6ee421828f22196ccce6f57cbc'] = 'J\'ai reçu cette commande';
 
 $_MODULE['<{maborderconfirm}prestashop>maborderconfirm_f4f70727dc34561dfde1a3c529b6205c'] = 'Configuration';
 $_MODULE['<{maborderconfirm}prestashop>maborderconfirm_6978e044109560fcbf2f9b7a7ba51b16'] = 'Vérifiez les ID des statuts dans Commandes > Statuts.';
