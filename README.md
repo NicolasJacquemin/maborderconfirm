@@ -2,6 +2,11 @@
 Prestashop module to confirm an order is received
 
 # Changelog
+## 0.0.3
+
+- Send an email to admins
+
+# Changelog
 ## 0.0.2
 
 - Use a ajax handler

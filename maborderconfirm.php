@@ -11,7 +11,7 @@ class MabOrderConfirm extends Module {
   public function __construct() {
     $this->name = 'maborderconfirm';
     $this->tab = 'front_office_features';
-    $this->version = '0.0.2';
+    $this->version = '0.0.3';
     $this->author = 'NicolasJacquemin';
     $this->need_instance = 0;
 
