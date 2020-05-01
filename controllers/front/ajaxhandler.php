@@ -40,11 +40,11 @@ class MabOrderConfirmAjaxHandlerModuleFrontController extends ModuleFrontControl
       if ($order->getCurrentState() == $idStatusShipped) { // if the order is shipped
         $new_history = new OrderHistory();
         $new_history->id_order = (int) $order->id;
-//var_dump($order->getCurrentState());exit;
 
 //        $new_history->changeIdOrderState($idStatusReceived, $order); // 5: delivered
 //        $new_history->changeIdOrderState(4, $order); // 5: delivered
 //        $new_history->addWithemail(true);
+        $this->sendMail($order, $this->context->customer);
       }
 
 //      $this->context->smarty->assign('order', $order);
@@ -52,5 +52,36 @@ class MabOrderConfirmAjaxHandlerModuleFrontController extends ModuleFrontControl
     } else {
       $this->errors[] = Tools::displayError('Error: Invalid order number');
     }
+  }
+  
+  public function sendMail($order, $customer) {
+    $id_lang = $order->id_lang;
+    $template = 'delivered';
+    $subject = 'mab order confirm';
+    $template_vars = $this->getMailParams($order, $customer);
+    $to = $customer->email; //-- TODO SEND TO ADMIN
+    $to_name = null; //-- Nice to have customisable
+    $from = $customer->email;
+    $from_name = $customer->firstname . ' ' . $customer->lastname;
+    $file_attachment = null;
+    $mode_smtp = null;
+    $template_path = _PS_MODULE_DIR_ . '/maborderconfirm/mails/';
+    $die = true;
+    $id_shop = null; //-- uses current shop
+    $bcc = null; //-- Nice to have customisable
+    $reply_to = null; //-- Nice to have customisable
+    
+    Mail::Send( $id_lang, $template, $subject, $template_vars, $to, $to_name,
+                $from, $from_name, $file_attachment, $mode_smtp,
+                $template_path, $die, $id_shop, $bcc, $reply_to
+            );
+  }
+  
+  protected function getMailParams($order, $customer){
+    return array(
+        '{id_order}' => $order->id,
+        '{firstname}' => $customer->firstname,
+        '{lastname}' => $customer->lastname
+    );
   }
 }

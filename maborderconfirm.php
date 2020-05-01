@@ -119,11 +119,18 @@ class MabOrderConfirm extends Module {
         'id_language' => $this->context->language->id
     );
     
-    $echo = '<div style="margin: 32px; background-color: #abdcb3; padding: 16px;">WIP - Coming soon, the list of statuses.</div>';
-//    $echo .= $this->displayWarning('WIP - Coming soon, the list of statuses.');
+    $echo = $this->announcement();
     $echo .= $helper->generateForm(array($fields_form));
 
     return $echo;
+  }
+  
+  protected function announcement() {
+    $output = '<div class="bootstrap"><div class="module_warning alert">';
+    $output .= '<div style="background-color:#abdcb3;color:#353;padding:16px;">WIP - Coming soon, the list of statuses.</div>';
+    $output .= '</div></div>';
+
+    return $output;
   }
 
   public function getConfigFieldsValues() {
