@@ -2,8 +2,8 @@
  * 2020 Mon Atelier Bronzage
  */
 function maborderconfirm(form) {
-  var action = $('#markAsReceived').attr("action");
-  var callback = $('#markAsReceived').data("callback");
+  var action = form.getAttribute("action");
+  var callback = form.dataset.callback;
   var paramString = "ajax=true";
   $(form).find('input').each(function () {
     if ($(this).attr('type') !== "submit") {
