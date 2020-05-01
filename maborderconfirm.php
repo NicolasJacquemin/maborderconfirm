@@ -11,7 +11,7 @@ class MabOrderConfirm extends Module {
   public function __construct() {
     $this->name = 'maborderconfirm';
     $this->tab = 'front_office_features';
-    $this->version = '0.0.1';
+    $this->version = '0.0.2';
     $this->author = 'NicolasJacquemin';
     $this->need_instance = 0;
 
@@ -27,7 +27,7 @@ class MabOrderConfirm extends Module {
     Configuration::updateValue('MAB_ORDER_CONFIRM_SHIPPED', 4);
     Configuration::updateValue('MAB_ORDER_CONFIRM_RECEIVED', 5);
 
-    if (!parent::install() || !$this->registerHook('displayHeader') || !$this->registerHook('orderHistory') || $this->installOrderOverrides()) {
+    if (!parent::install() || !$this->registerHook('displayHeader') || !$this->registerHook('orderHistory')) {
       return false;
     }
 
@@ -120,7 +120,7 @@ class MabOrderConfirm extends Module {
     );
     
     $echo = '<div style="margin: 32px; background-color: #abdcb3; padding: 16px;">WIP - Coming soon, the list of statuses.</div>';
-//    $echo .= $this->displayConfirmation($this->l('Your country has been updated.'));
+//    $echo .= $this->displayWarning('WIP - Coming soon, the list of statuses.');
     $echo .= $helper->generateForm(array($fields_form));
 
     return $echo;
@@ -144,85 +144,11 @@ class MabOrderConfirm extends Module {
     $values = $this->getConfigFieldsValues();
 
     $this->smarty->assign(array(
+        'action_url' => $this->context->link->getModuleLink('maborderconfirm', 'ajaxhandler', array(), (bool) Configuration::get('PS_SSL_ENABLED')),
         'id_status_shipped' => $values['MAB_ORDER_CONFIRM_SHIPPED'],
         'id_status_received' => $values['MAB_ORDER_CONFIRM_RECEIVED']
     ));
     
     return $this->display(__FILE__, 'views/templates/maborderconfirm.tpl');
-  }
-  
-  /***********************************************************************/
-  /****************************** Overrides ******************************/
-  /***********************************************************************/
-  public function installOrderOverrides() {
-    $overrides = array(
-        'override/controllers/front/OrderDetailController.php'
-    );
-
-    $text_override_must_copy = $this->l('You must copy the file');
-    $text_override_at_root = $this->l('at the root of your store');
-    $text_override_create_folders = $this->l('Create folders if necessary.');
-
-    foreach ($overrides as $override) {
-      if (!$this->existOverride($override)) {
-        if (!$this->copyOverride($override)) {
-          $text_override = $text_override_must_copy . ' "/modules/' . $this->name . '/public/' . $override . '" '
-                  . $text_override_at_root . ' "/' . $override . '". ' . $text_override_create_folders;
-          $this->warnings[] = $text_override;
-        }
-      } else {
-        if (!$this->existOverride($override, '/KEY_' . $this->prefix_module . '_' . $this->version . '/')) {
-          rename(_PS_ROOT_DIR_ . '/' . $override, _PS_ROOT_DIR_ . '/' . $override . '_BK-' . $this->prefix_module . '-PTS_' . date('Y-m-d'));
-          if (!$this->copyOverride($override)) {
-            $text_override = $text_override_must_copy . ' "/modules/' . $this->name . '/public/' . $override . '" '
-                    . $text_override_at_root . ' "/' . $override . '". ' . $text_override_create_folders;
-            $this->warnings[] = $text_override;
-          }
-        }
-      }
-    }
-  }
-  
-  protected function copyOverride($file) {
-    $source = _PS_MODULE_DIR_ . $this->name . '/public/' . $file;
-    $dest = _PS_ROOT_DIR_ . '/' . $file;
-
-    $path_dest = dirname($dest);
-
-    if (!is_dir($path_dest)) {
-      if (!mkdir($path_dest, 0777, true)) {
-        return false;
-      }
-    }
-
-    if (@copy($source, $dest)) {
-      $path_cache_file = _PS_ROOT_DIR_ . '/cache/class_index.php';
-      if (file_exists($path_cache_file)) {
-        unlink($path_cache_file);
-      }
-
-      return true;
-    }
-
-    return false;
-  }
-
-  protected function existOverride($filename, $key = false) {
-    $file = _PS_ROOT_DIR_ . '/' . $filename;
-
-    if (file_exists($file)) {
-      if ($key) {
-        $file_content = Tools::file_get_contents($file);
-        if (preg_match($key, $file_content) > 0) {
-          return true;
-        }
-
-        return false;
-      }
-
-      return true;
-    }
-
-    return false;
   }
 }
