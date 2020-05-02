@@ -44,6 +44,7 @@ class MabOrderConfirmAjaxHandlerModuleFrontController extends ModuleFrontControl
 //        $new_history->changeIdOrderState($idStatusReceived, $order); // 5: delivered
 //        $new_history->changeIdOrderState(4, $order); // 5: delivered
 //        $new_history->addWithemail(true);
+        //-- TODO make email optional
         $this->sendMail($order, $this->context->customer);
       }
 
@@ -54,15 +55,31 @@ class MabOrderConfirmAjaxHandlerModuleFrontController extends ModuleFrontControl
     }
   }
   
+  protected function getRecipients() {
+    $emails = array();
+    $result = Db::getInstance()->executeS('
+      SELECT e.email
+      FROM `' . _DB_PREFIX_ . 'employee` e,  `' . _DB_PREFIX_ . 'employee_shop` s
+      WHERE e.id_employee = s.id_employee 
+      AND s.id_shop = ' . (int) $this->context->shop->id
+    );
+    
+    foreach ($result as $r) {
+      $emails[] = $r['email'];
+    }
+
+    return $emails;
+  }
+
   public function sendMail($order, $customer) {
     $id_lang = $order->id_lang;
     $template = 'delivered';
-    $subject = 'mab order confirm';
+    $subject = 'A customer has received their order';
     $template_vars = $this->getMailParams($order, $customer);
-    $to = $customer->email; //-- TODO SEND TO ADMIN
-    $to_name = null; //-- Nice to have customisable
-    $from = $customer->email;
-    $from_name = $customer->firstname . ' ' . $customer->lastname;
+    $to = $this->getRecipients();
+    $to_name = null; //-- Nice to have
+    $from = 'no-reply@mab.com'; //-- TODO customisable field
+    $from_name = null;
     $file_attachment = null;
     $mode_smtp = null;
     $template_path = _PS_MODULE_DIR_ . '/maborderconfirm/mails/';
@@ -71,8 +88,8 @@ class MabOrderConfirmAjaxHandlerModuleFrontController extends ModuleFrontControl
     $bcc = null; //-- Nice to have customisable
     $reply_to = null; //-- Nice to have customisable
     
-    Mail::Send( $id_lang, $template, $subject, $template_vars, $to, $to_name,
-                $from, $from_name, $file_attachment, $mode_smtp,
+    Mail::Send( $id_lang, $template, $subject, $template_vars, $to,
+                $to_name, $from, $from_name, $file_attachment, $mode_smtp,
                 $template_path, $die, $id_shop, $bcc, $reply_to
             );
   }
