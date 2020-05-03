@@ -27,6 +27,7 @@ class MabOrderConfirm extends Module {
     Configuration::updateValue('MAB_ORDER_CONFIRM_SHIPPED', 4);
     Configuration::updateValue('MAB_ORDER_CONFIRM_RECEIVED', 5);
     // email configuration
+    Configuration::updateValue('MAB_ORDER_CONFIRM_SEND_EMAIL', true);
     Configuration::updateValue('MAB_ORDER_CONFIRM_SENDER_NAME', null);
     Configuration::updateValue('MAB_ORDER_CONFIRM_SENDER_EMAIL', 'no-reply@' . Tools::getHttpHost(false));
 
@@ -56,12 +57,14 @@ class MabOrderConfirm extends Module {
       if (!Validate::isInt($shp) || $shp <= 0) {
         $errors[] = $this->l('The shipped status ID is invalid. Please choose an existing ID.');
       }
-      
+
+      $snm = (int)Tools::getValue('MAB_ORDER_CONFIRM_SEND_EMAIL');
+
       $msn = Tools::getValue('MAB_ORDER_CONFIRM_SENDER_NAME');
       if (empty($msn)) {
         $msn = null;
       }
-      
+
       $mse = Tools::getValue('MAB_ORDER_CONFIRM_SENDER_EMAIL');
       if (empty($mse)) {
         $mse = 'no-reply@' . Tools::getHttpHost(false);
@@ -74,6 +77,7 @@ class MabOrderConfirm extends Module {
       } else {
         Configuration::updateValue('MAB_ORDER_CONFIRM_SHIPPED', (int)$shp);
         Configuration::updateValue('MAB_ORDER_CONFIRM_RECEIVED', (int)$rec);
+        Configuration::updateValue('MAB_ORDER_CONFIRM_SEND_EMAIL', ($snm === 1));
         Configuration::updateValue('MAB_ORDER_CONFIRM_SENDER_NAME', $msn);
         Configuration::updateValue('MAB_ORDER_CONFIRM_SENDER_EMAIL', $mse);
 
@@ -123,11 +127,29 @@ class MabOrderConfirm extends Module {
             'description' => $this->l('Email sent to admin when a user confirms reception of their order.'),
             'input' => array(
                 array(
+                    'type' => 'radio',
+                    'label' => $this->l('Send confirmation email'),
+                    'name' => 'MAB_ORDER_CONFIRM_SEND_EMAIL',
+                    'is_bool' => true,
+                    'values' => array(// $values contains the data itself.
+                        array(
+                            'id' => 'send_mail_on',
+                            'value' => 1,
+                            'label' => $this->l('Enabled')
+                        ),
+                        array(
+                            'id' => 'send_mail_off',
+                            'value' => 0,
+                            'label' => $this->l('Disabled')
+                        )
+                    )
+                ),
+                array(
                     'type' => 'text',
                     'label' => $this->l('Sender email'),
                     'name' => 'MAB_ORDER_CONFIRM_SENDER_EMAIL',
                     'class' => 'fixed-width-xxl',
-                    'desc' => $this->l('The email address for the email sent to admins. Leave blank for $1.'),
+                    'desc' => $this->l('The email address for the email sent to admins. Leave blank for $1.'), //---------- TODO string replace
                 ),
                 array(
                     'type' => 'text',
@@ -185,6 +207,7 @@ class MabOrderConfirm extends Module {
     return array(
         'MAB_ORDER_CONFIRM_SHIPPED' => Tools::getValue('MAB_ORDER_CONFIRM_SHIPPED', (int) Configuration::get('MAB_ORDER_CONFIRM_SHIPPED')),
         'MAB_ORDER_CONFIRM_RECEIVED' => Tools::getValue('MAB_ORDER_CONFIRM_RECEIVED', (int) Configuration::get('MAB_ORDER_CONFIRM_RECEIVED')),
+        'MAB_ORDER_CONFIRM_SEND_EMAIL' => Tools::getValue('MAB_ORDER_CONFIRM_SEND_EMAIL', (int) Configuration::get('MAB_ORDER_CONFIRM_SEND_EMAIL')),
         'MAB_ORDER_CONFIRM_SENDER_NAME' => Tools::getValue('MAB_ORDER_CONFIRM_SENDER_NAME', Configuration::get('MAB_ORDER_CONFIRM_SENDER_NAME')),
         'MAB_ORDER_CONFIRM_SENDER_EMAIL' => Tools::getValue('MAB_ORDER_CONFIRM_SENDER_EMAIL', Configuration::get('MAB_ORDER_CONFIRM_SENDER_EMAIL')),
     );

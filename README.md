@@ -5,6 +5,8 @@ Prestashop module to confirm an order is received
 ## 0.0.3
 
 - Send an email to admins
+- Enable/disable email to admins
+- Customise email sender address & name
 
 # Changelog
 ## 0.0.2

@@ -45,7 +45,10 @@ class MabOrderConfirmAjaxHandlerModuleFrontController extends ModuleFrontControl
 //        $new_history->changeIdOrderState(4, $order); // 5: delivered
 //        $new_history->addWithemail(true);
         //-- TODO make email optional
-        $this->sendMail($order, $this->context->customer);
+        
+        if ((bool) Configuration::get('MAB_ORDER_CONFIRM_SEND_EMAIL')) {
+          $this->sendMail($order, $this->context->customer);
+        }
       }
 
 //      $this->context->smarty->assign('order', $order);
@@ -83,7 +86,8 @@ class MabOrderConfirmAjaxHandlerModuleFrontController extends ModuleFrontControl
   }
 
   public function sendMail($order, $customer) {
-    $id_lang = $order->id_lang; // TODO customise admin language
+    $lang = new Language((int) Configuration::get('PS_LANG_DEFAULT'));
+    $id_lang = $lang->id;
     $template = 'delivered';
     $subject = 'A customer has received their order';  // TODO customise admin language
     $template_vars = $this->getMailParams($order, $customer);
