@@ -11,7 +11,7 @@ class MabOrderConfirm extends Module {
   public function __construct() {
     $this->name = 'maborderconfirm';
     $this->tab = 'front_office_features';
-    $this->version = '0.0.2';
+    $this->version = '0.0.3';
     $this->author = 'NicolasJacquemin';
     $this->need_instance = 0;
 
@@ -26,6 +26,10 @@ class MabOrderConfirm extends Module {
   public function install() {
     Configuration::updateValue('MAB_ORDER_CONFIRM_SHIPPED', 4);
     Configuration::updateValue('MAB_ORDER_CONFIRM_RECEIVED', 5);
+    // email configuration
+    Configuration::updateValue('MAB_ORDER_CONFIRM_SEND_EMAIL', true);
+    Configuration::updateValue('MAB_ORDER_CONFIRM_SENDER_NAME', null);
+    Configuration::updateValue('MAB_ORDER_CONFIRM_SENDER_EMAIL', 'no-reply@' . Tools::getHttpHost(false));
 
     if (!parent::install() || !$this->registerHook('displayHeader') || !$this->registerHook('orderHistory')) {
       return false;
@@ -38,7 +42,6 @@ class MabOrderConfirm extends Module {
     return parent::uninstall();
   }
   
-  //-- TODO admin form to customise status ID (order is shipped, order is received)
   //-- TODO infobulle to add the hook in the view | {hook h='orderHistory'}
   public function getContent() {
     $output = '';
@@ -55,11 +58,28 @@ class MabOrderConfirm extends Module {
         $errors[] = $this->l('The shipped status ID is invalid. Please choose an existing ID.');
       }
 
+      $snm = (int)Tools::getValue('MAB_ORDER_CONFIRM_SEND_EMAIL');
+
+      $msn = Tools::getValue('MAB_ORDER_CONFIRM_SENDER_NAME');
+      if (empty($msn)) {
+        $msn = null;
+      }
+
+      $mse = Tools::getValue('MAB_ORDER_CONFIRM_SENDER_EMAIL');
+      if (empty($mse)) {
+        $mse = 'no-reply@' . Tools::getHttpHost(false);
+      } else if (!Validate::isEmail($mse)) {
+        $errors[] = $this->l('The sender email format is invalid. Please enter a valid email.');
+      }
+
       if (isset($errors) && count($errors) > 0) {
         $output = $this->displayError(implode('<br />', $errors));
       } else {
-        Configuration::updateValue('MAB_ORDER_CONFIRM_SHIPPED', (int) $shp);
-        Configuration::updateValue('MAB_ORDER_CONFIRM_RECEIVED', (int) $rec);
+        Configuration::updateValue('MAB_ORDER_CONFIRM_SHIPPED', (int)$shp);
+        Configuration::updateValue('MAB_ORDER_CONFIRM_RECEIVED', (int)$rec);
+        Configuration::updateValue('MAB_ORDER_CONFIRM_SEND_EMAIL', ($snm === 1));
+        Configuration::updateValue('MAB_ORDER_CONFIRM_SENDER_NAME', $msn);
+        Configuration::updateValue('MAB_ORDER_CONFIRM_SENDER_EMAIL', $mse);
 
         $output = $this->displayConfirmation($this->l('Your settings have been updated.'));
       }
@@ -68,17 +88,14 @@ class MabOrderConfirm extends Module {
     return $output . $this->renderForm();
   }
   
-  //-- TODO admin form
-  //-- TODO load the list of statuses
-  public function renderForm() {
-    $fields_form = array(
+  public function getStatusForm() {
+    return array(
         'form' => array(
             'legend' => array(
-                'title' => $this->l('Settings'),
+                'title' => $this->l('Status settings'),
                 'icon' => 'icon-cogs'
             ),
             'description' => $this->l('Check status IDs in Order > Status.'),
-//            'description' => $this->l('Don\'t forget to add {hook h=\'orderHistory\'} in your template.'),
             'input' => array(
                 array(
                     'type' => 'text',
@@ -95,11 +112,64 @@ class MabOrderConfirm extends Module {
                     'desc' => $this->l('Set the ID of the received status (default: 5).'),
                 ),
             ),
-            'submit' => array(
-                'title' => $this->l('Save'),
-            )
+            'submit' => array('title' => $this->l('Save'))
         ),
     );
+  }
+  
+  public function getEmailForm() {
+    return array(
+        'form' => array(
+            'legend' => array(
+                'title' => $this->l('email settings'),
+                'icon' => 'icon-envelope'
+            ),
+            'description' => $this->l('Email sent to admin when a user confirms reception of their order.'),
+            'input' => array(
+                array(
+                    'type' => 'radio',
+                    'label' => $this->l('Send confirmation email'),
+                    'name' => 'MAB_ORDER_CONFIRM_SEND_EMAIL',
+                    'is_bool' => true,
+                    'values' => array(// $values contains the data itself.
+                        array(
+                            'id' => 'send_mail_on',
+                            'value' => 1,
+                            'label' => $this->l('Enabled')
+                        ),
+                        array(
+                            'id' => 'send_mail_off',
+                            'value' => 0,
+                            'label' => $this->l('Disabled')
+                        )
+                    )
+                ),
+                array(
+                    'type' => 'text',
+                    'label' => $this->l('Sender email'),
+                    'name' => 'MAB_ORDER_CONFIRM_SENDER_EMAIL',
+                    'class' => 'fixed-width-xxl',
+                    'desc' => $this->l('The email address for the email sent to admins. Leave blank for $1.'), //---------- TODO string replace
+                ),
+                array(
+                    'type' => 'text',
+                    'label' => $this->l('Sender name'),
+                    'name' => 'MAB_ORDER_CONFIRM_SENDER_NAME',
+                    'class' => 'fixed-width-xxl',
+                    'desc' => $this->l('The name for the email sent to admins. Leave blank for no name.'),
+                ),
+            ),
+            'submit' => array('title' => $this->l('Save'))
+        ),
+    );
+  }
+
+  //-- TODO load the list of statuses
+  public function renderForm() {
+    // 'description' => $this->l('Don\'t forget to add {hook h=\'orderHistory\'} in your template.'),
+    $status = $this->getStatusForm();
+    $email = $this->getEmailForm();
+    $fields_form = array($status, $email);
 
     $helper = new HelperForm();
     $helper->show_toolbar = false;
@@ -119,14 +189,31 @@ class MabOrderConfirm extends Module {
         'id_language' => $this->context->language->id
     );
     
-    $echo = '<div style="margin: 32px; background-color: #abdcb3; padding: 16px;">WIP - Coming soon, the list of statuses.</div>';
-//    $echo .= $this->displayWarning('WIP - Coming soon, the list of statuses.');
-    $echo .= $helper->generateForm(array($fields_form));
+    $echo = $this->announcement();
+    $echo .= $helper->generateForm($fields_form);
 
     return $echo;
   }
+  
+  protected function announcement() {
+    $output = '<div class="bootstrap"><div class="module_warning alert">';
+    $output .= '<div style="background-color:#abdcb3;color:#353;padding:16px;">WIP - Coming soon, the list of statuses.</div>';
+    $output .= '</div></div>';
+
+    return $output;
+  }
 
   public function getConfigFieldsValues() {
+    return array(
+        'MAB_ORDER_CONFIRM_SHIPPED' => Tools::getValue('MAB_ORDER_CONFIRM_SHIPPED', (int) Configuration::get('MAB_ORDER_CONFIRM_SHIPPED')),
+        'MAB_ORDER_CONFIRM_RECEIVED' => Tools::getValue('MAB_ORDER_CONFIRM_RECEIVED', (int) Configuration::get('MAB_ORDER_CONFIRM_RECEIVED')),
+        'MAB_ORDER_CONFIRM_SEND_EMAIL' => Tools::getValue('MAB_ORDER_CONFIRM_SEND_EMAIL', (int) Configuration::get('MAB_ORDER_CONFIRM_SEND_EMAIL')),
+        'MAB_ORDER_CONFIRM_SENDER_NAME' => Tools::getValue('MAB_ORDER_CONFIRM_SENDER_NAME', Configuration::get('MAB_ORDER_CONFIRM_SENDER_NAME')),
+        'MAB_ORDER_CONFIRM_SENDER_EMAIL' => Tools::getValue('MAB_ORDER_CONFIRM_SENDER_EMAIL', Configuration::get('MAB_ORDER_CONFIRM_SENDER_EMAIL')),
+    );
+  }
+
+  public function getViewParameters() {
     return array(
         'MAB_ORDER_CONFIRM_SHIPPED' => Tools::getValue('MAB_ORDER_CONFIRM_SHIPPED', (int) Configuration::get('MAB_ORDER_CONFIRM_SHIPPED')),
         'MAB_ORDER_CONFIRM_RECEIVED' => Tools::getValue('MAB_ORDER_CONFIRM_RECEIVED', (int) Configuration::get('MAB_ORDER_CONFIRM_RECEIVED')),
@@ -141,7 +228,7 @@ class MabOrderConfirm extends Module {
   }
 
   public function hookOrderHistory($params) {
-    $values = $this->getConfigFieldsValues();
+    $values = $this->getViewParameters();
 
     $this->smarty->assign(array(
         'action_url' => $this->context->link->getModuleLink('maborderconfirm', 'ajaxhandler', array(), (bool) Configuration::get('PS_SSL_ENABLED')),

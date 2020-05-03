@@ -1,0 +1,5 @@
+Bonjour,
+
+{firstname} {lastname} a confirmé la réception de la commande n&#176;{id_order}.
+
+{shop_name} - {shop_url}
