@@ -70,16 +70,27 @@ class MabOrderConfirmAjaxHandlerModuleFrontController extends ModuleFrontControl
 
     return $emails;
   }
+  
+  protected function getSenderAddress() {
+    //-- $reply_to can be different from sender and also customisable
+    return configuration::get('MAB_ORDER_CONFIRM_SENDER_EMAIL');
+  }
+
+  protected function getSenderName() {
+    $name = configuration::get('MAB_ORDER_CONFIRM_SENDER_NAME');
+    
+    return (!empty($name)) ? $name : null;
+  }
 
   public function sendMail($order, $customer) {
-    $id_lang = $order->id_lang;
+    $id_lang = $order->id_lang; // TODO customise admin language
     $template = 'delivered';
-    $subject = 'A customer has received their order';
+    $subject = 'A customer has received their order';  // TODO customise admin language
     $template_vars = $this->getMailParams($order, $customer);
     $to = $this->getRecipients();
     $to_name = null; //-- Nice to have
-    $from = 'no-reply@mab.com'; //-- TODO customisable field
-    $from_name = null;
+    $from = $this->getSenderAddress();
+    $from_name = $this->getSenderName();
     $file_attachment = null;
     $mode_smtp = null;
     $template_path = _PS_MODULE_DIR_ . '/maborderconfirm/mails/';
