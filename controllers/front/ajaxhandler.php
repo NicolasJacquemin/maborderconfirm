@@ -31,9 +31,6 @@ class MabOrderConfirmAjaxHandlerModuleFrontController extends ModuleFrontControl
     $order = new Order($orderId);
     
     if (Validate::isLoadedObject($order) && $order->id_customer == $this->context->customer->id) {
-      
-      
-      
       $idStatusShipped = (int) Configuration::get('MAB_ORDER_CONFIRM_SHIPPED');
       $idStatusReceived = (int) Configuration::get('MAB_ORDER_CONFIRM_RECEIVED');
 
@@ -41,10 +38,8 @@ class MabOrderConfirmAjaxHandlerModuleFrontController extends ModuleFrontControl
         $new_history = new OrderHistory();
         $new_history->id_order = (int) $order->id;
 
-//        $new_history->changeIdOrderState($idStatusReceived, $order); // 5: delivered
-//        $new_history->changeIdOrderState(4, $order); // 5: delivered
-//        $new_history->addWithemail(true);
-        //-- TODO make email optional
+        $new_history->changeIdOrderState($idStatusReceived, $order); // 5: delivered
+        $new_history->add(true);
         
         if ((bool) Configuration::get('MAB_ORDER_CONFIRM_SEND_EMAIL')) {
           $this->sendMail($order, $this->context->customer);

@@ -3,15 +3,18 @@
  * 2019-2020 Nicolas Jacquemin
  */
 
-if (!defined('_PS_VERSION_'))
+if (!defined('_PS_VERSION_')) {
   exit;
+}
+
+require_once(dirname(__FILE__).'/classes/ConfirmationReminder.php');
 
 class MabOrderConfirm extends Module {
 
   public function __construct() {
     $this->name = 'maborderconfirm';
     $this->tab = 'front_office_features';
-    $this->version = '0.0.3';
+    $this->version = '0.0.4';
     $this->author = 'NicolasJacquemin';
     $this->need_instance = 0;
 
@@ -30,6 +33,12 @@ class MabOrderConfirm extends Module {
     Configuration::updateValue('MAB_ORDER_CONFIRM_SEND_EMAIL', true);
     Configuration::updateValue('MAB_ORDER_CONFIRM_SENDER_NAME', null);
     Configuration::updateValue('MAB_ORDER_CONFIRM_SENDER_EMAIL', 'no-reply@' . Tools::getHttpHost(false));
+    
+    if (file_exists($this->local_path.'sql/install.php')) {
+        include($this->local_path.'sql/install.php');
+    } else {
+        return false;
+    }
 
     if (!parent::install() || !$this->registerHook('displayHeader') || !$this->registerHook('orderHistory')) {
       return false;
@@ -190,6 +199,7 @@ class MabOrderConfirm extends Module {
     );
     
     $echo = $this->announcement();
+    $echo .= $this->reminderStats();
     $echo .= $helper->generateForm($fields_form);
 
     return $echo;
@@ -200,6 +210,23 @@ class MabOrderConfirm extends Module {
     $output .= '<div style="background-color:#abdcb3;color:#353;padding:16px;">WIP - Coming soon, the list of statuses.</div>';
     $output .= '</div></div>';
 
+    return $output;
+  }
+  
+  protected function reminderStats() {
+    $data = ConfirmationReminder::TotalRecall();
+    $shipped = ConfirmationReminder::CountShippedOrders();
+    
+    $output = '<div class="panel">';
+    $output .= '<div class="panel-heading"><i class="icon-envelope"></i> Reminders</div>';
+    $output .= '<ul>';
+    $output .= '<li>shipped: ' . $shipped . '</li>';
+    $output .= '<li>07 days reminder: ' . $data['days7'] . '</li>';
+    $output .= '<li>15 days reminder: ' . $data['days15'] . '</li>';
+    $output .= '<li>30 days reminder: ' . $data['days30'] . '</li>';
+    $output .= '</ul>';
+    $output .= '</div>';
+    
     return $output;
   }
 
@@ -215,8 +242,8 @@ class MabOrderConfirm extends Module {
 
   public function getViewParameters() {
     return array(
-        'MAB_ORDER_CONFIRM_SHIPPED' => Tools::getValue('MAB_ORDER_CONFIRM_SHIPPED', (int) Configuration::get('MAB_ORDER_CONFIRM_SHIPPED')),
-        'MAB_ORDER_CONFIRM_RECEIVED' => Tools::getValue('MAB_ORDER_CONFIRM_RECEIVED', (int) Configuration::get('MAB_ORDER_CONFIRM_RECEIVED')),
+        'MAB_ORDER_CONFIRM_SHIPPED' => Configuration::get('MAB_ORDER_CONFIRM_SHIPPED'),
+        'MAB_ORDER_CONFIRM_RECEIVED' => Configuration::get('MAB_ORDER_CONFIRM_RECEIVED'),
     );
   }
 
