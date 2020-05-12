@@ -51,7 +51,6 @@ class MabOrderConfirm extends Module {
     return parent::uninstall();
   }
   
-  //-- TODO infobulle to add the hook in the view | {hook h='orderHistory'}
   public function getContent() {
     $output = '';
     $errors = array();
@@ -94,9 +93,13 @@ class MabOrderConfirm extends Module {
       }
     }
     
-    return $output . $this->renderForm();
+    return $output . $this->renderForm() . $this->showTips();
   }
   
+  protected function showTips() {
+    return '<div class="bootstrap"><div class="module_warning alert" style="background-color:#ea8;">Remember to add the hook in the view | {hook h=\'orderHistory\'}</div></div>';
+  }
+
   public function getStatusForm() {
     return array(
         'form' => array(
@@ -131,7 +134,7 @@ class MabOrderConfirm extends Module {
         'form' => array(
             'legend' => array(
                 'title' => $this->l('email settings'),
-                'icon' => 'icon-envelope'
+                'icon' => 'icon-cogs'
             ),
             'description' => $this->l('Email sent to admin when a user confirms reception of their order.'),
             'input' => array(
@@ -214,19 +217,15 @@ class MabOrderConfirm extends Module {
   }
   
   protected function reminderStats() {
-    $data = ConfirmationReminder::TotalRecall();
-    $shipped = ConfirmationReminder::CountShippedOrders();
-    
+    $data = ConfirmationReminder::GetReminderStats();
     $output = '<div class="panel">';
     $output .= '<div class="panel-heading"><i class="icon-envelope"></i> Reminders</div>';
-    $output .= '<ul>';
-    $output .= '<li>shipped: ' . $shipped . '</li>';
-    $output .= '<li>07 days reminder: ' . $data['days7'] . '</li>';
-    $output .= '<li>15 days reminder: ' . $data['days15'] . '</li>';
-    $output .= '<li>30 days reminder: ' . $data['days30'] . '</li>';
-    $output .= '</ul>';
+    $output .= 'c7: ' . $data['reminder1'] . ' - ';
+    $output .= 'c15: ' . $data['reminder2'] . ' - ';
+    $output .= 'c30: ' . $data['reminder3'] . ' - ';
+    $output .= 'total: ' . $data['total'];
     $output .= '</div>';
-    
+
     return $output;
   }
 

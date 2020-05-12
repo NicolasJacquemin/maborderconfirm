@@ -2,6 +2,7 @@
 
 class ConfirmationReminder {
 
+  // unused
   public static function CountShippedOrders() {
     $result = Db::getInstance()->executeS('
       SELECT COUNT(o.id_order) as total
@@ -12,40 +13,50 @@ class ConfirmationReminder {
     return (count($result) > 0) ? $result[0]['total'] : -1;
   }
 
-  public static function TotalRecall() {
-    // 🥄
-    $result = Db::getInstance()->executeS('
-      SELECT o.id_order, oc.days_7, oc.days_15, days_30
+  // 🥄
+  protected static function GetReminderStatus() {
+    $sql = '
+      SELECT o.id_order, oc.days_7, oc.days_15, days_30, h.date_add
       FROM `' . _DB_PREFIX_ . 'orders` o
       LEFT JOIN `' . _DB_PREFIX_ . 'maborderconfirm` oc ON o.id_order = oc.id_order
-      WHERE o.current_state = 4'
-    );
-    // TODO get date of history state = 4
-    // var_dump($result);exit;
-
-    $days7 = 0;
-    $days15 = 0;
-    $days30 = 0;
-
-    foreach ($result as $r) {
-      if (boolval($r['days_7'])) {
-        $days7++;
-      }
-      if (boolval($r['days_15'])) {
-        $days15++;
-      }
-      if (boolval($r['days_30'])) {
-        $days30++;
+      LEFT JOIN `' . _DB_PREFIX_ . 'order_history` h ON h.id_order = o.id_order
+      WHERE o.current_state = ' . Configuration::get('MAB_ORDER_CONFIRM_SHIPPED') . ' 
+      AND h.id_order_state = ' . Configuration::get('MAB_ORDER_CONFIRM_SHIPPED');
+    //echo $sql;exit;
+    $result = Db::getInstance()->executeS($sql);
+    
+    return $result;
+  }
+  
+  
+  public static function GetReminderStats() {
+    $data = self::GetReminderStatus();
+    $now = date_create('now');
+    $c7 = $c15 = $c30 = 0;
+    $total = count($data);
+    foreach ($data as $d) {
+      $shippingDate = date_create($d['date_add']);
+      $interval = date_diff($now, $shippingDate);
+      if ($interval->days > 30 && !(bool) $d['days_30']) {
+        $c30++;
+      } else if ($interval->days > 15 && !(bool) $d['days_15']) {
+        $c15++;
+      } else if ($interval->days > 7 && !(bool) $d['days_7']) {
+        $c7++;
+      } else if ($interval->days < 7) {
+        $total--;
       }
     }
 
     return array(
-        'days7' => $days7,
-        'days15' => $days15,
-        'days30' => $days30,
+        'reminder1' => $c7, 
+        'reminder2' => $c15,
+        'reminder3' => $c30,
+        'total' => $total,
     );
   }
 
+  // WIP - site en construction.gif #1997
   protected function totalRecallGetEmail() {
     // 🥄
 
