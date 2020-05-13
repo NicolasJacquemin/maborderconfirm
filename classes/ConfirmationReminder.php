@@ -1,4 +1,7 @@
 <?php
+/*
+ * 2019-2020 Nicolas Jacquemin
+ */
 
 class ConfirmationReminder {
 
