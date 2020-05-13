@@ -56,9 +56,9 @@ class MabOrderConfirm extends Module {
     $output = '';
     
     if (Tools::isSubmit('maborderconfirm')) {
-      $output .= processConfigurationForm();
+      $output .= $this->processConfigurationForm();
     } else if (Tools::isSubmit('sendreminder')) {
-      $output .= $this->displayConfirmation('WIP');
+      $output .= $this->processReminderForm();
     }
     
     $output .= $this->announcement();
@@ -67,10 +67,6 @@ class MabOrderConfirm extends Module {
     $output .= $this->showTips();
     
     return $output;
-  }
-
-  protected function showTips() {
-    return '<div class="bootstrap"><div class="module_warning alert" style="background-color:#ea8;">Remember to add the hook in the view | {hook h=\'orderHistory\'}</div></div>';
   }
   
   protected function processConfigurationForm() {
@@ -115,6 +111,11 @@ class MabOrderConfirm extends Module {
     
     return $output;
   }
+  
+  protected function processReminderForm() {
+    ConfirmationReminder::SendReminders();
+    return '';
+  }
 
   //-- TODO load the list of statuses
   public function renderForm() {
@@ -149,6 +150,10 @@ class MabOrderConfirm extends Module {
     $output .= '</div></div>';
 
     return $output;
+  }
+
+  protected function showTips() {
+    return $this->display(__FILE__, 'views/templates/admin/tips.tpl');
   }
   
   protected function reminderStats() {
