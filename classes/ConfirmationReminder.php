@@ -49,9 +49,9 @@ class ConfirmationReminder {
     }
 
     return array(
-        'reminder1' => $c7, 
-        'reminder2' => $c15,
-        'reminder3' => $c30,
+        'c7' => $c7, 
+        'c15' => $c15,
+        'c30' => $c30,
         'total' => $total,
     );
   }

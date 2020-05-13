@@ -81,7 +81,7 @@ class MabOrderConfirm extends Module {
       }
 
       if (isset($errors) && count($errors) > 0) {
-        $output = $this->displayError(implode('<br />', $errors));
+        $output .= $this->displayError(implode('<br />', $errors));
       } else {
         Configuration::updateValue('MAB_ORDER_CONFIRM_SHIPPED', (int)$shp);
         Configuration::updateValue('MAB_ORDER_CONFIRM_RECEIVED', (int)$rec);
@@ -89,8 +89,12 @@ class MabOrderConfirm extends Module {
         Configuration::updateValue('MAB_ORDER_CONFIRM_SENDER_NAME', $msn);
         Configuration::updateValue('MAB_ORDER_CONFIRM_SENDER_EMAIL', $mse);
 
-        $output = $this->displayConfirmation($this->l('Your settings have been updated.'));
+        $output .= $this->displayConfirmation($this->l('Your settings have been updated.'));
       }
+    }
+    
+    if (Tools::isSubmit('sendreminder')) {
+      $output .= $this->displayConfirmation(WIP);
     }
     
     return $output . $this->renderForm() . $this->showTips();
@@ -218,13 +222,14 @@ class MabOrderConfirm extends Module {
   
   protected function reminderStats() {
     $data = ConfirmationReminder::GetReminderStats();
-    $output = '<div class="panel">';
-    $output .= '<div class="panel-heading"><i class="icon-envelope"></i> Reminders</div>';
-    $output .= 'c7: ' . $data['reminder1'] . ' - ';
-    $output .= 'c15: ' . $data['reminder2'] . ' - ';
-    $output .= 'c30: ' . $data['reminder3'] . ' - ';
-    $output .= 'total: ' . $data['total'];
-    $output .= '</div>';
+    $action = Context::getContext()->link->getAdminLink('AdminModules') . '&configure=maborderconfirm&module_name=maborderconfirm&tab_module=front_office_features';
+    
+    $this->smarty->assign(array(
+        'action_url' => $action,
+        'data' => $data,
+    ));
+    
+    $output .= $this->display(__FILE__, 'views/templates/admin/send-reminder.tpl');
 
     return $output;
   }
