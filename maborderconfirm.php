@@ -15,7 +15,7 @@ class MabOrderConfirm extends Module {
   public function __construct() {
     $this->name = 'maborderconfirm';
     $this->tab = 'front_office_features';
-    $this->version = '0.0.4';
+    $this->version = '0.0.5';
     $this->author = 'NicolasJacquemin';
     $this->need_instance = 0;
 
@@ -194,10 +194,11 @@ class MabOrderConfirm extends Module {
     }
   }
 
-  public function hookOrderHistory($params) {
+  public function hookOrderHistory($params, $order) {
     $values = $this->getViewParameters();
-
+    
     $this->smarty->assign(array(
+        'order' => $params['order'],
         'action_url' => $this->context->link->getModuleLink('maborderconfirm', 'ajaxhandler', array(), (bool) Configuration::get('PS_SSL_ENABLED')),
         'id_status_shipped' => $values['MAB_ORDER_CONFIRM_SHIPPED'],
         'id_status_received' => $values['MAB_ORDER_CONFIRM_RECEIVED']
