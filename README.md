@@ -5,6 +5,9 @@ Prestashop module to confirm an order is received
 ## 0.0.4
 
 - Reminder email
+- Button to send reminder email
+- 3 reminders, after 7, 15 and 30 days
+- Store reminder sendings in database
 
 ## 0.0.3
 
