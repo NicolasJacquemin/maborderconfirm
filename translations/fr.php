@@ -3,7 +3,18 @@
 global $_MODULE;
 $_MODULE = array();
 
+// front end button
 $_MODULE['<{maborderconfirm}prestashop>maborderconfirm_64b60f6ee421828f22196ccce6f57cbc'] = 'J\'ai reçu cette commande';
+
+// mail subject
+$_MODULE['<{maborderconfirm}prestashop>maborderconfirm_2d1b9604308ec02604ce81af053ac17d'] = 'Confirmez votre commande';
+
+$_MODULE['<{maborderconfirm}prestashop>send-reminder_5d5329df7d6093b74759dfb941d5dfb5'] = 'En attente de relance :';
+$_MODULE['<{maborderconfirm}prestashop>send-reminder_47ff82c4e9ad84d197c7396103ac7ddb'] = 'Total en attente :';
+$_MODULE['<{maborderconfirm}prestashop>send-reminder_ae4f5128af42ab498ec024c5c7ac5dbb'] = '> 30 jours :';
+$_MODULE['<{maborderconfirm}prestashop>send-reminder_166c0845c35f79409ce152400991d6e3'] = '> 15 jours :';
+$_MODULE['<{maborderconfirm}prestashop>send-reminder_7ffa38b6d8072a1e901979cc079215cf'] = '> 7 jours :';
+$_MODULE['<{maborderconfirm}prestashop>send-reminder_c8450e74190183c0bbca4c3a874ca547'] = 'Envoyer les e-mails de relance';
 
 $_MODULE['<{maborderconfirm}prestashop>maborderconfirm_f866423018a6ed2d51cc9c10abf30cac'] = 'Configuration des statuts';
 $_MODULE['<{maborderconfirm}prestashop>maborderconfirm_6978e044109560fcbf2f9b7a7ba51b16'] = 'Vérifiez les ID des statuts dans Commandes > Statuts.';

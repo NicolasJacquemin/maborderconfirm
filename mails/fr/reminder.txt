@@ -1,0 +1,5 @@
+Bonjour,
+
+Merci de confirmer la récéption de la commande n°{reference}.
+
+{shop_name} - {shop_url}

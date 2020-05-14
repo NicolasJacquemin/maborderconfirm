@@ -3,15 +3,19 @@
  * 2019-2020 Nicolas Jacquemin
  */
 
-if (!defined('_PS_VERSION_'))
+if (!defined('_PS_VERSION_')) {
   exit;
+}
+
+require_once(dirname(__FILE__).'/classes/ConfirmationReminder.php');
+require_once(dirname(__FILE__).'/classes/OrderConfirmForm.php');
 
 class MabOrderConfirm extends Module {
 
   public function __construct() {
     $this->name = 'maborderconfirm';
     $this->tab = 'front_office_features';
-    $this->version = '0.0.3';
+    $this->version = '0.0.4';
     $this->author = 'NicolasJacquemin';
     $this->need_instance = 0;
 
@@ -30,6 +34,12 @@ class MabOrderConfirm extends Module {
     Configuration::updateValue('MAB_ORDER_CONFIRM_SEND_EMAIL', true);
     Configuration::updateValue('MAB_ORDER_CONFIRM_SENDER_NAME', null);
     Configuration::updateValue('MAB_ORDER_CONFIRM_SENDER_EMAIL', 'no-reply@' . Tools::getHttpHost(false));
+    
+    if (file_exists($this->local_path.'sql/install.php')) {
+        include($this->local_path.'sql/install.php');
+    } else {
+        return false;
+    }
 
     if (!parent::install() || !$this->registerHook('displayHeader') || !$this->registerHook('orderHistory')) {
       return false;
@@ -42,133 +52,75 @@ class MabOrderConfirm extends Module {
     return parent::uninstall();
   }
   
-  //-- TODO infobulle to add the hook in the view | {hook h='orderHistory'}
   public function getContent() {
     $output = '';
-    $errors = array();
     
     if (Tools::isSubmit('maborderconfirm')) {
-      $rec = Tools::getValue('MAB_ORDER_CONFIRM_RECEIVED');
-      if (!Validate::isInt($rec) || $rec <= 0) {
-        $errors[] = $this->l('The received status ID is invalid. Please choose an existing ID.');
-      }
-
-      $shp = Tools::getValue('MAB_ORDER_CONFIRM_SHIPPED');
-      if (!Validate::isInt($shp) || $shp <= 0) {
-        $errors[] = $this->l('The shipped status ID is invalid. Please choose an existing ID.');
-      }
-
-      $snm = (int)Tools::getValue('MAB_ORDER_CONFIRM_SEND_EMAIL');
-
-      $msn = Tools::getValue('MAB_ORDER_CONFIRM_SENDER_NAME');
-      if (empty($msn)) {
-        $msn = null;
-      }
-
-      $mse = Tools::getValue('MAB_ORDER_CONFIRM_SENDER_EMAIL');
-      if (empty($mse)) {
-        $mse = 'no-reply@' . Tools::getHttpHost(false);
-      } else if (!Validate::isEmail($mse)) {
-        $errors[] = $this->l('The sender email format is invalid. Please enter a valid email.');
-      }
-
-      if (isset($errors) && count($errors) > 0) {
-        $output = $this->displayError(implode('<br />', $errors));
-      } else {
-        Configuration::updateValue('MAB_ORDER_CONFIRM_SHIPPED', (int)$shp);
-        Configuration::updateValue('MAB_ORDER_CONFIRM_RECEIVED', (int)$rec);
-        Configuration::updateValue('MAB_ORDER_CONFIRM_SEND_EMAIL', ($snm === 1));
-        Configuration::updateValue('MAB_ORDER_CONFIRM_SENDER_NAME', $msn);
-        Configuration::updateValue('MAB_ORDER_CONFIRM_SENDER_EMAIL', $mse);
-
-        $output = $this->displayConfirmation($this->l('Your settings have been updated.'));
-      }
+      $output .= $this->processConfigurationForm();
+    } else if (Tools::isSubmit('sendreminder')) {
+      $output .= $this->processReminderForm();
     }
     
-    return $output . $this->renderForm();
+    $output .= $this->announcement();
+    $output .= $this->reminderStats();
+    $output .= $this->renderForm();
+    $output .= $this->showTips();
+    
+    return $output;
   }
   
-  public function getStatusForm() {
-    return array(
-        'form' => array(
-            'legend' => array(
-                'title' => $this->l('Status settings'),
-                'icon' => 'icon-cogs'
-            ),
-            'description' => $this->l('Check status IDs in Order > Status.'),
-            'input' => array(
-                array(
-                    'type' => 'text',
-                    'label' => $this->l('Shipped status ID'),
-                    'name' => 'MAB_ORDER_CONFIRM_SHIPPED',
-                    'class' => 'fixed-width-xs',
-                    'desc' => $this->l('Set the ID of the shipped status (default: 4).'),
-                ),
-                array(
-                    'type' => 'text',
-                    'label' => $this->l('Received status ID'),
-                    'name' => 'MAB_ORDER_CONFIRM_RECEIVED',
-                    'class' => 'fixed-width-xs',
-                    'desc' => $this->l('Set the ID of the received status (default: 5).'),
-                ),
-            ),
-            'submit' => array('title' => $this->l('Save'))
-        ),
-    );
+  protected function processConfigurationForm() {
+    $output = '';
+    $errors = array();
+
+    $shp = Tools::getValue('MAB_ORDER_CONFIRM_SHIPPED');
+    $rec = Tools::getValue('MAB_ORDER_CONFIRM_RECEIVED');
+    $snm = (int)Tools::getValue('MAB_ORDER_CONFIRM_SEND_EMAIL');
+    $msn = Tools::getValue('MAB_ORDER_CONFIRM_SENDER_NAME');
+    $mse = Tools::getValue('MAB_ORDER_CONFIRM_SENDER_EMAIL');
+
+    if (!Validate::isInt($rec) || $rec <= 0) {
+      $errors[] = $this->l('The received status ID is invalid. Please choose an existing ID.');
+    }
+    
+    if (!Validate::isInt($shp) || $shp <= 0) {
+      $errors[] = $this->l('The shipped status ID is invalid. Please choose an existing ID.');
+    }
+
+    if (empty($msn)) {
+      $msn = null;
+    }
+    
+    if (empty($mse)) {
+      $mse = 'no-reply@' . Tools::getHttpHost(false);
+    } else if (!Validate::isEmail($mse)) {
+      $errors[] = $this->l('The sender email format is invalid. Please enter a valid email.');
+    }
+
+    if (isset($errors) && count($errors) > 0) {
+      $output .= $this->displayError(implode('<br />', $errors));
+    } else {
+      Configuration::updateValue('MAB_ORDER_CONFIRM_SHIPPED', (int) $shp);
+      Configuration::updateValue('MAB_ORDER_CONFIRM_RECEIVED', (int) $rec);
+      Configuration::updateValue('MAB_ORDER_CONFIRM_SEND_EMAIL', ($snm === 1));
+      Configuration::updateValue('MAB_ORDER_CONFIRM_SENDER_NAME', $msn);
+      Configuration::updateValue('MAB_ORDER_CONFIRM_SENDER_EMAIL', $mse);
+
+      $output .= $this->displayConfirmation($this->l('Your settings have been updated.'));
+    }
+    
+    return $output;
   }
   
-  public function getEmailForm() {
-    return array(
-        'form' => array(
-            'legend' => array(
-                'title' => $this->l('email settings'),
-                'icon' => 'icon-envelope'
-            ),
-            'description' => $this->l('Email sent to admin when a user confirms reception of their order.'),
-            'input' => array(
-                array(
-                    'type' => 'radio',
-                    'label' => $this->l('Send confirmation email'),
-                    'name' => 'MAB_ORDER_CONFIRM_SEND_EMAIL',
-                    'is_bool' => true,
-                    'values' => array(// $values contains the data itself.
-                        array(
-                            'id' => 'send_mail_on',
-                            'value' => 1,
-                            'label' => $this->l('Enabled')
-                        ),
-                        array(
-                            'id' => 'send_mail_off',
-                            'value' => 0,
-                            'label' => $this->l('Disabled')
-                        )
-                    )
-                ),
-                array(
-                    'type' => 'text',
-                    'label' => $this->l('Sender email'),
-                    'name' => 'MAB_ORDER_CONFIRM_SENDER_EMAIL',
-                    'class' => 'fixed-width-xxl',
-                    'desc' => $this->l('The email address for the email sent to admins. Leave blank for $1.'), //---------- TODO string replace
-                ),
-                array(
-                    'type' => 'text',
-                    'label' => $this->l('Sender name'),
-                    'name' => 'MAB_ORDER_CONFIRM_SENDER_NAME',
-                    'class' => 'fixed-width-xxl',
-                    'desc' => $this->l('The name for the email sent to admins. Leave blank for no name.'),
-                ),
-            ),
-            'submit' => array('title' => $this->l('Save'))
-        ),
-    );
+  protected function processReminderForm() {
+    ConfirmationReminder::SendReminders();
+    return '';
   }
 
   //-- TODO load the list of statuses
   public function renderForm() {
-    // 'description' => $this->l('Don\'t forget to add {hook h=\'orderHistory\'} in your template.'),
-    $status = $this->getStatusForm();
-    $email = $this->getEmailForm();
+    $status = OrderConfirmForm::GetStatusForm();
+    $email = OrderConfirmForm::GetEmailForm();
     $fields_form = array($status, $email);
 
     $helper = new HelperForm();
@@ -189,16 +141,31 @@ class MabOrderConfirm extends Module {
         'id_language' => $this->context->language->id
     );
     
-    $echo = $this->announcement();
-    $echo .= $helper->generateForm($fields_form);
-
-    return $echo;
+    return $helper->generateForm($fields_form);
   }
   
   protected function announcement() {
     $output = '<div class="bootstrap"><div class="module_warning alert">';
     $output .= '<div style="background-color:#abdcb3;color:#353;padding:16px;">WIP - Coming soon, the list of statuses.</div>';
     $output .= '</div></div>';
+
+    return $output;
+  }
+
+  protected function showTips() {
+    return $this->display(__FILE__, 'views/templates/admin/tips.tpl');
+  }
+  
+  protected function reminderStats() {
+    $data = ConfirmationReminder::GetReminderStats();
+    $action = Context::getContext()->link->getAdminLink('AdminModules') . '&configure=maborderconfirm&module_name=maborderconfirm&tab_module=front_office_features';
+    
+    $this->smarty->assign(array(
+        'action_url' => $action,
+        'data' => $data,
+    ));
+    
+    $output .= $this->display(__FILE__, 'views/templates/admin/send-reminder.tpl');
 
     return $output;
   }
@@ -215,8 +182,8 @@ class MabOrderConfirm extends Module {
 
   public function getViewParameters() {
     return array(
-        'MAB_ORDER_CONFIRM_SHIPPED' => Tools::getValue('MAB_ORDER_CONFIRM_SHIPPED', (int) Configuration::get('MAB_ORDER_CONFIRM_SHIPPED')),
-        'MAB_ORDER_CONFIRM_RECEIVED' => Tools::getValue('MAB_ORDER_CONFIRM_RECEIVED', (int) Configuration::get('MAB_ORDER_CONFIRM_RECEIVED')),
+        'MAB_ORDER_CONFIRM_SHIPPED' => Configuration::get('MAB_ORDER_CONFIRM_SHIPPED'),
+        'MAB_ORDER_CONFIRM_RECEIVED' => Configuration::get('MAB_ORDER_CONFIRM_RECEIVED'),
     );
   }
 

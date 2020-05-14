@@ -3,7 +3,18 @@
 global $_MODULE;
 $_MODULE = array();
 
+// front end button
 $_MODULE['<{maborderconfirm}prestashop>maborderconfirm_64b60f6ee421828f22196ccce6f57cbc'] = 'Ho ricevuto questo ordine';
+
+// mail subject
+$_MODULE['<{maborderconfirm}prestashop>maborderconfirm_2d1b9604308ec02604ce81af053ac17d'] = 'Conferma il tuo ordine';
+
+$_MODULE['<{maborderconfirm}prestashop>send-reminder_5d5329df7d6093b74759dfb941d5dfb5'] = 'Promemoria in sospeso';
+$_MODULE['<{maborderconfirm}prestashop>send-reminder_47ff82c4e9ad84d197c7396103ac7ddb'] = 'Totale in sospeso:';
+$_MODULE['<{maborderconfirm}prestashop>send-reminder_ae4f5128af42ab498ec024c5c7ac5dbb'] = '> 30 giorni:';
+$_MODULE['<{maborderconfirm}prestashop>send-reminder_166c0845c35f79409ce152400991d6e3'] = '> 15 giorni:';
+$_MODULE['<{maborderconfirm}prestashop>send-reminder_7ffa38b6d8072a1e901979cc079215cf'] = '> 7 giorni:';
+$_MODULE['<{maborderconfirm}prestashop>send-reminder_c8450e74190183c0bbca4c3a874ca547'] = 'Invia email di promemoria';
 
 $_MODULE['<{maborderconfirm}prestashop>maborderconfirm_f866423018a6ed2d51cc9c10abf30cac'] = 'Configurazione di stato';
 $_MODULE['<{maborderconfirm}prestashop>maborderconfirm_09f80221545dae84e377ca13b4387624'] = 'Controlla gli ID di stato in Ordine> Stato.';
