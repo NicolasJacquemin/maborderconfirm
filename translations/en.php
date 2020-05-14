@@ -3,7 +3,18 @@
 global $_MODULE;
 $_MODULE = array();
 
+// front end button
 $_MODULE['<{maborderconfirm}prestashop>maborderconfirm_64b60f6ee421828f22196ccce6f57cbc'] = 'I have received this order';
+
+// mail subject
+$_MODULE['<{maborderconfirm}prestashop>maborderconfirm_2d1b9604308ec02604ce81af053ac17d'] = 'Confirm your order';
+
+$_MODULE['<{maborderconfirm}prestashop>send-reminder_5d5329df7d6093b74759dfb941d5dfb5'] = 'Pending for a reminder';
+$_MODULE['<{maborderconfirm}prestashop>send-reminder_47ff82c4e9ad84d197c7396103ac7ddb'] = 'Pending total:';
+$_MODULE['<{maborderconfirm}prestashop>send-reminder_ae4f5128af42ab498ec024c5c7ac5dbb'] = '> 30 days:';
+$_MODULE['<{maborderconfirm}prestashop>send-reminder_166c0845c35f79409ce152400991d6e3'] = '> 15 days:';
+$_MODULE['<{maborderconfirm}prestashop>send-reminder_7ffa38b6d8072a1e901979cc079215cf'] = '> 7 days:';
+$_MODULE['<{maborderconfirm}prestashop>send-reminder_c8450e74190183c0bbca4c3a874ca547'] = 'Send reminder email';
 
 $_MODULE['<{maborderconfirm}prestashop>maborderconfirm_f866423018a6ed2d51cc9c10abf30cac'] = 'Status settings';
 $_MODULE['<{maborderconfirm}prestashop>maborderconfirm_09f80221545dae84e377ca13b4387624'] = 'Check status IDs in Order > Status.';

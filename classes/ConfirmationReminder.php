@@ -19,7 +19,7 @@ class ConfirmationReminder {
         $c15++;
       } else if ($interval->days > 7 && !(bool) $d['days_7']) {
         $c7++;
-      } else if ($interval->days < 7) {
+      } else {
         $total--;
       }
     }
@@ -93,7 +93,7 @@ class ConfirmationReminder {
     $lang = new Language((int) Configuration::get('PS_LANG_DEFAULT'));
     $id_lang = $lang->id;
     $template = 'reminder';
-    $subject = 'Confirmez votre commande';  // TODO translate
+    $subject = TranslateCore::getModuleTranslation('maborderconfirm', 'Confirm your order', 'maborderconfirm');
     $template_vars = array('reference' => $reference, 'orderId' => $orderId);
     $to = $email;
     $to_name = null; //-- Nice to have
