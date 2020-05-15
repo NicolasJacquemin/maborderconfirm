@@ -7,7 +7,7 @@
         onsubmit="maborderconfirm(this);return false;" 
         method="post" class="std">
     <input type="hidden" class="hidden" value="{$order->id|intval}" name="id_order" />
-    <input type="hidden" class="hidden" value="{$order_status}" name="markAsReceived" />
+    <input type="hidden" class="hidden" value="{$order_status|intval}" name="markAsReceived" />
     <input type="submit" class="btn btn-default" value="{l s='I have received this order' mod='maborderconfirm'}">
   </form>
 {/if}
