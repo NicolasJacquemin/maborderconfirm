@@ -19,7 +19,11 @@ function maborderconfirm(form) {
     headers: {"cache-control": "no-cache"},
     url: action + '?rand=' + new Date().getTime(),
     data: paramString,
-    success: function () {
+    success: function (res) {
+      res = JSON.parse(res);
+      if(res.hasError === false) {
+        $(form).hide();
+      }
       showOrder(1, orderId, file);
     }
   });
