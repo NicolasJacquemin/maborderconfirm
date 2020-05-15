@@ -198,6 +198,7 @@ class MabOrderConfirm extends Module {
     $values = $this->getViewParameters();
 
     $this->smarty->assign(array(
+        'order_id' => is_object($params['order']) ? $params['order']->id : $params['order']['id'],
         'order_status' => is_object($params['order']) ? $params['order']->current_state : $params['order']['current_state'],
         'action_url' => $this->context->link->getModuleLink('maborderconfirm', 'ajaxhandler', array(), (bool) Configuration::get('PS_SSL_ENABLED')),
         'id_status_shipped' => $values['MAB_ORDER_CONFIRM_SHIPPED'],
