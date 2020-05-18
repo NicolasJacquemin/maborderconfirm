@@ -2,6 +2,10 @@
 Prestashop module to confirm an order is received
 
 # Changelog
+## 0.0.6
+
+- Select status from a dropdown list
+
 ## 0.0.5
 
 - Make module compatible with default theme

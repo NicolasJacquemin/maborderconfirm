@@ -15,7 +15,7 @@ class MabOrderConfirm extends Module {
   public function __construct() {
     $this->name = 'maborderconfirm';
     $this->tab = 'front_office_features';
-    $this->version = '0.0.5';
+    $this->version = '0.0.6';
     $this->author = 'NicolasJacquemin';
     $this->need_instance = 0;
 
@@ -61,7 +61,6 @@ class MabOrderConfirm extends Module {
       $output .= $this->processReminderForm();
     }
     
-    $output .= $this->announcement();
     $output .= $this->reminderStats();
     $output .= $this->renderForm();
     $output .= $this->showTips();
@@ -144,14 +143,6 @@ class MabOrderConfirm extends Module {
     return $helper->generateForm($fields_form);
   }
   
-  protected function announcement() {
-    $output = '<div class="bootstrap"><div class="module_warning alert">';
-    $output .= '<div style="background-color:#abdcb3;color:#353;padding:16px;">WIP - Coming soon, the list of statuses.</div>';
-    $output .= '</div></div>';
-
-    return $output;
-  }
-
   protected function showTips() {
     return $this->display(__FILE__, 'views/templates/admin/tips.tpl');
   }

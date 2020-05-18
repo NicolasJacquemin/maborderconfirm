@@ -18,8 +18,8 @@ $_MODULE['<{maborderconfirm}prestashop>send-reminder_c8450e74190183c0bbca4c3a874
 
 $_MODULE['<{maborderconfirm}prestashop>maborderconfirm_f866423018a6ed2d51cc9c10abf30cac'] = 'Status Konfiguration';
 $_MODULE['<{maborderconfirm}prestashop>maborderconfirm_09f80221545dae84e377ca13b4387624'] = 'Überprüfen Sie die Status-IDs unter Bestellung > Status.';
-$_MODULE['<{maborderconfirm}prestashop>maborderconfirm_36cf56d699a66417facf03774abdfc0c'] = 'Status ID versendet';
-$_MODULE['<{maborderconfirm}prestashop>maborderconfirm_665b41b7500497d1761223327dc90a5b'] = 'Status ID erhalten';
+$_MODULE['<{maborderconfirm}prestashop>maborderconfirm_57739b9e202d0dd9c107eb760ebe18bb'] = 'Versendet Status';
+$_MODULE['<{maborderconfirm}prestashop>maborderconfirm_5c19c9b070b21db1d032b64cfa426d3a'] = 'Ehalten Status';
 $_MODULE['<{maborderconfirm}prestashop>maborderconfirm_33f83f0c3b7f3f367d6c818dbbf8c819'] = 'Stellen Sie die ID des versendet status ein (Standard: 4).';
 $_MODULE['<{maborderconfirm}prestashop>maborderconfirm_1d2f040ad08f7413e759ca333973fede'] = 'Stellen Sie die ID des erhalten Status ein (Standard: 5).';
 

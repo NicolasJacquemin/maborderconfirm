@@ -7,7 +7,19 @@ class OrderConfirmForm {
   static $NAME = 'maborderconfirm';
   static $CLASSNAME = 'maborderconfirm';
   
+  protected static function GetStatusList() {
+    $lang = Context::getContext()->language->id;
+    
+    return OrderState::getOrderStates($lang);
+  }
+
   public static function GetStatusForm() {
+    $options = array(
+        'query' => self::GetStatusList(),
+        'id' => 'id_order_state',
+        'name' => 'name'
+    );
+
     return array(
         'form' => array(
             'legend' => array(
@@ -17,18 +29,20 @@ class OrderConfirmForm {
             'description' => TranslateCore::getModuleTranslation(self::$NAME, 'Check status IDs in Order > Status.', self::$CLASSNAME),
             'input' => array(
                 array(
-                    'type' => 'text',
-                    'label' => TranslateCore::getModuleTranslation(self::$NAME, 'Shipped status ID', self::$CLASSNAME),
+                    'type' => 'select',
+                    'label' => TranslateCore::getModuleTranslation(self::$NAME, 'Shipped status', self::$CLASSNAME),
                     'name' => 'MAB_ORDER_CONFIRM_SHIPPED',
                     'class' => 'fixed-width-xs',
                     'desc' => TranslateCore::getModuleTranslation(self::$NAME, 'Set the ID of the shipped status (default: 4).', self::$CLASSNAME),
+                    'options' => $options
                 ),
                 array(
-                    'type' => 'text',
-                    'label' => TranslateCore::getModuleTranslation(self::$NAME, 'Received status ID'),
+                    'type' => 'select',
+                    'label' => TranslateCore::getModuleTranslation(self::$NAME, 'Received status', self::$CLASSNAME),
                     'name' => 'MAB_ORDER_CONFIRM_RECEIVED',
                     'class' => 'fixed-width-xs',
                     'desc' => TranslateCore::getModuleTranslation(self::$NAME, 'Set the ID of the received status (default: 5).', self::$CLASSNAME),
+                    'options' => $options
                 ),
             ),
             'submit' => array('title' => TranslateCore::getModuleTranslation(self::$NAME, 'Save', self::$CLASSNAME))
