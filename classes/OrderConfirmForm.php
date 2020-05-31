@@ -45,7 +45,7 @@ class OrderConfirmForm {
                     'options' => $options
                 ),
             ),
-            'submit' => array('title' => TranslateCore::getModuleTranslation(self::$NAME, 'Save', self::$CLASSNAME))
+            'submit' => array('title' => TranslateCore::getAdminTranslation('Save'), self::$CLASSNAME)
         ),
     );
   }
@@ -92,7 +92,7 @@ class OrderConfirmForm {
                     'desc' => TranslateCore::getModuleTranslation(self::$NAME, 'The name for the email sent to admins. Leave blank for no name.', self::$CLASSNAME),
                 ),
             ),
-            'submit' => array('title' => TranslateCore::getModuleTranslation(self::$NAME, 'Save'), self::$CLASSNAME)
+            'submit' => array('title' => TranslateCore::getAdminTranslation('Save'), self::$CLASSNAME)
         ),
     );
   }
