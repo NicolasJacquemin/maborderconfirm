@@ -10,7 +10,7 @@ function maborderconfirm(form) {
       paramString += '&' + $(this).attr('name') + '=' + encodeURIComponent($(this).val());
     }
   });
-  
+
   var orderId = $(form).find("input[name=id_order]")[0].value;
   var file = callback + '&id_order=' + orderId;
 
@@ -21,7 +21,7 @@ function maborderconfirm(form) {
     data: paramString,
     success: function (res) {
       res = JSON.parse(res);
-      if(res.hasError === false) {
+      if (res.hasError === false) {
         $(form).hide();
       }
       showOrder(1, orderId, file);
